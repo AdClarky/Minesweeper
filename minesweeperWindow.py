@@ -21,13 +21,13 @@ background.fill((67, 67, 67))
 button = pygame.Rect(50, 50, 50, 50)
 
 
-def add_text(font_size, colour, words, XCenter, YCenter):
+def add_text(font_size, colour, words, x_centre, y_centre):
     words = str(words)
     font = pygame.font.Font(None, font_size)
     text = font.render(words, True, colour)
     text_position = text.get_rect()
-    text_position.centerx = XCenter
-    text_position.centery = YCenter
+    text_position.centerx = x_centre
+    text_position.centery = y_centre
     background.blit(text, text_position)
 
 

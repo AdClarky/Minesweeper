@@ -1,13 +1,13 @@
 import copy
 import random
+from typing import Tuple
 import minesweeperWindow
 import pygame
 from pygame.locals import *
 from colour import Color
 
-# constant variables
 bombsCoords = 0
-mainBoard = 0
+mainBoard: list[list[int]] = 0
 boardToShow = []
 
 
@@ -22,58 +22,36 @@ class Colours:
     green = [0, 255, 0]
 
 
-# checks which squares can be checked/placed on, returns the coords of squares around the input square that can be used
-def possible_squares_bool_checker(x_guess, y_guess):
-    coords = []
-    bool_array = [True, True, True, True, True, True, True, True]
-    height = len(mainBoard) - 1
-    width = len(mainBoard[0]) - 1
+def possible_squares_checker(x_guess: int, y_guess: int) -> set[Tuple[int, int]]:
+    """
+    checks which squares around a point can be accessed
+    :param x_guess: the position of x
+    :param y_guess: the position of y
+    :return: returns a set of tuples which can be accessed
+    """
+    possible_moves: set[Tuple[int, int]] = {(x_guess - 1, y_guess - 1), (x_guess, y_guess - 1),
+                                             (x_guess + 1, y_guess - 1), (x_guess - 1, y_guess),
+                                             (x_guess + 1, y_guess), (x_guess - 1, y_guess + 1),
+                                             (x_guess, y_guess + 1), (x_guess + 1, y_guess + 1)}
+    height: int = len(mainBoard) - 1
+    width: int = len(mainBoard[0]) - 1
     if y_guess == 0:
-        bool_array[0] = False
-        bool_array[1] = False
-        bool_array[2] = False
+        possible_moves.discard((x_guess - 1, y_guess - 1))
+        possible_moves.discard((x_guess, y_guess - 1))
+        possible_moves.discard((x_guess + 1, y_guess - 1))
     elif y_guess == height:
-        bool_array[5] = False
-        bool_array[6] = False
-        bool_array[7] = False
+        possible_moves.discard((x_guess + 1, y_guess + 1))
+        possible_moves.discard((x_guess, y_guess + 1))
+        possible_moves.discard((x_guess - 1, y_guess + 1))
     if x_guess == 0:
-        bool_array[0] = False
-        bool_array[3] = False
-        bool_array[5] = False
+        possible_moves.discard((x_guess - 1, y_guess + 1))
+        possible_moves.discard((x_guess - 1, y_guess))
+        possible_moves.discard((x_guess - 1, y_guess - 1))
     elif x_guess == width:
-        bool_array[2] = False
-        bool_array[4] = False
-        bool_array[7] = False
-    for index, possible in enumerate(bool_array):
-        if possible:
-            local_x = 0
-            local_y = 0
-            if index == 0:
-                local_x = x_guess - 1
-                local_y = y_guess - 1
-            elif index == 1:
-                local_x = x_guess
-                local_y = y_guess - 1
-            elif index == 2:
-                local_x = x_guess + 1
-                local_y = y_guess - 1
-            elif index == 3:
-                local_x = x_guess - 1
-                local_y = y_guess
-            elif index == 4:
-                local_x = x_guess + 1
-                local_y = y_guess
-            elif index == 5:
-                local_x = x_guess - 1
-                local_y = y_guess + 1
-            elif index == 6:
-                local_x = x_guess
-                local_y = y_guess + 1
-            elif index == 7:
-                local_x = x_guess + 1
-                local_y = y_guess + 1
-            coords.append((local_x, local_y))
-    return coords
+        possible_moves.discard((x_guess + 1, y_guess + 1))
+        possible_moves.discard((x_guess + 1, y_guess - 1))
+        possible_moves.discard((x_guess + 1, y_guess))
+    return possible_moves
 
 
 def createBoard(column_size, row_size, num_of_mines):
@@ -101,63 +79,51 @@ def createBoard(column_size, row_size, num_of_mines):
 # mainBoard creation, creates a fully completed board
 def bombsClose(board_array, bomb_locations):
     for location in bomb_locations:
-        # print(location)
         y = location[0]
         x = location[1]
-        squares_to_change = possible_squares_bool_checker(x, y)
+        squares_to_change = possible_squares_checker(x, y)
         for squares in squares_to_change:
             board_array[squares[1]][squares[0]] += 1
     for locations in bomb_locations:
         board_array[locations[0]][locations[1]] = "B"
 
 
-# prints the board in a good looking way, jindex = x, index = y
-def printBoard(board):
-    textSize = 30
+# prints the board in a good-looking way, j = x, i = y
+def print_board(board):
+    text_size = 30
     minesweeperWindow.background.fill((67, 67, 67))
-    for index, row in enumerate(board):
-        for jindex, item in enumerate(row):
-            text = board[index][jindex]
+    for i, row in enumerate(board):
+        for j, item in enumerate(row):
+            text = board[i][j]
             if failed:
-                minesweeperWindow.add_text(textSize, [255, 0, 0], text, jindex * 80 + 20, index * 72 + 20)
+                minesweeperWindow.add_text(text_size, [255, 0, 0], text, j * 80 + 20, i * 72 + 20)
             elif won:
-                minesweeperWindow.add_text(textSize, Colours.green, text, jindex * 80 + 20, index * 72 + 20)
+                minesweeperWindow.add_text(text_size, Colours.green, text, j * 80 + 20, i * 72 + 20)
             else:
                 if text == 0:
-                    minesweeperWindow.add_text(textSize, Colours.white, text, jindex * 80 + 20, index * 72 + 20)
+                    minesweeperWindow.add_text(text_size, Colours.white, text, j * 80 + 20, i * 72 + 20)
                 elif text == "-":
-                    minesweeperWindow.add_text(textSize, Colours.black, text, jindex * 80 + 20, index * 72 + 20)
+                    minesweeperWindow.add_text(text_size, Colours.black, text, j * 80 + 20, i * 72 + 20)
                 elif text == "B":
-                    minesweeperWindow.add_text(textSize, Colours.blue, text, jindex * 80 + 20, index * 72 + 20)
+                    minesweeperWindow.add_text(text_size, Colours.blue, text, j * 80 + 20, i * 72 + 20)
                 else:
-                    minesweeperWindow.add_text(textSize, Colours.gradient[text - 1],
-                                               text, jindex * 80 + 20, index * 72 + 20)
+                    minesweeperWindow.add_text(text_size, Colours.gradient[text - 1],
+                                               text, j * 80 + 20, i * 72 + 20)
     minesweeperWindow.add_text(50, Colours.white, "Number of mines:" + str(mineCount), 1730, 50)
 
 
-# prints the board in a good looking way
+# prints the board in a good-looking way
 def print_board_text(board):
     print("\n")
     for row in board:
         print(*row)
 
 
-# validates and converts an input to an integer, returns an integer
-def number_validation(input_message):
-    while True:
-        try:
-            num = int(input(input_message))
-            break
-        except ValueError:
-            print("Please enter a valid number.")
-    return num
-
-
 # checks the value of surrounding squares, returns the board with the squares filled in
 def check_surrounding(board, show_board, guess_pos):
     x = guess_pos[1]
     y = guess_pos[0]
-    squares_to_change = possible_squares_bool_checker(x, y)
+    squares_to_change = possible_squares_checker(x, y)
     for squares in squares_to_change:
         local_row = squares[0]
         local_column = squares[1]
@@ -197,7 +163,7 @@ numMine = int((xLength * yLength) * 0.25)
 mineCount = copy.deepcopy(numMine)
 board_creation()
 gameStarted = False
-printBoard(boardToShow)
+print_board(boardToShow)
 print_board_text(boardToShow)
 
 while True:
@@ -218,7 +184,7 @@ while True:
                         if mainBoard[yGuess][xGuess] == "B":
                             print("Failed")
                             failed = True
-                            printBoard(boardToShow)
+                            print_board(boardToShow)
                             break
                         else:
                             boardToShow = check_surrounding(mainBoard, boardToShow, (yGuess, xGuess))
@@ -236,4 +202,4 @@ while True:
                 if boardToShow == mainBoard:
                     won = True
                 print_board_text(boardToShow)
-                printBoard(boardToShow)
+                print_board(boardToShow)
