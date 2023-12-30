@@ -1,4 +1,6 @@
 import pygame
+from pygame import FULLSCREEN
+from config import *
 
 # definitions
 BOMB = -1
@@ -22,15 +24,16 @@ class Colours:
     green = [0, 255, 0]
 
 
-textSize = 30
 
 # default
 pygame.init()
 
 height = 1080
 length = 1920
-# screen = pygame.display.set_mode((length, height), flags=FULLSCREEN)
-screen = pygame.display.set_mode((length, height))
+if FULLSCREEN_BOOL:
+    screen = pygame.display.set_mode((length, height), flags=FULLSCREEN)
+else:
+    screen = pygame.display.set_mode((length, height))
 pygame.display.set_caption("Minesweeper")
 background = pygame.Surface(screen.get_size())
 background = background.convert()
@@ -61,16 +64,16 @@ def print_board_screen(board_shown: list[list[int]], game_state: int, mine_count
     for i, row in enumerate(board_shown):
         for j, text in enumerate(row):
             if game_state == FAILED:
-                add_text(textSize, Colours.red, text, j * 80 + 20, i * 72 + 20)
+                add_text(TEXT_SIZE, Colours.red, text, j * 80 + 20, i * 72 + 20)
             elif game_state == WON:
-                add_text(textSize, Colours.green, text, j * 80 + 20, i * 72 + 20)
+                add_text(TEXT_SIZE, Colours.green, text, j * 80 + 20, i * 72 + 20)
             else:
                 if text == BLANK:
-                    add_text(textSize, Colours.black, "-", j * 80 + 20, i * 72 + 20)
+                    add_text(TEXT_SIZE, Colours.black, "-", j * 80 + 20, i * 72 + 20)
                 elif text == BOMB:
-                    add_text(textSize, Colours.blue, "B", j * 80 + 20, i * 72 + 20)
+                    add_text(TEXT_SIZE, Colours.blue, "B", j * 80 + 20, i * 72 + 20)
                 else:
-                    add_text(textSize, Colours.gradient[int(text)], text, j * 80 + 20, i * 72 + 20)
+                    add_text(TEXT_SIZE, Colours.gradient[int(text)], text, j * 80 + 20, i * 72 + 20)
     add_text(50, Colours.white, "Number of mines:" + str(mine_counter), 1730, 50)
 
 

@@ -4,12 +4,7 @@ from typing import Tuple
 import minesweeperWindow
 import pygame
 from pygame.locals import *
-
-# consts
-TEXT_SIZE = 30
-X_LENGTH: int = 20
-Y_LENGTH: int = 15
-NUM_MINES: int = int((X_LENGTH * Y_LENGTH) * 0.25)  # int((X_LENGTH * Y_LENGTH) * 0.25)
+from config import *
 
 # definitions
 BOMB = -1
@@ -59,10 +54,10 @@ def create_board() -> Tuple[list[Tuple[int, int]], list[list[int]], list[list[in
     """
     answer_board: list[list[int]] = []
     board_shown: list[list[int]] = []
-    for i in range(X_LENGTH):
+    for i in range(Y_LENGTH):
         answer_board.append([])
         board_shown.append([])
-        for j in range(Y_LENGTH):
+        for j in range(X_LENGTH):
             answer_board[i].append(0)
             board_shown[i].append(-2)
 
@@ -81,9 +76,9 @@ def create_bomb_positions() -> list[Tuple[int, int]]:
     bombs_pos: list[Tuple[int, int]] = []
 
     for i in range(NUM_MINES):
-        random_pos = (random.randint(0, X_LENGTH - 1), random.randint(0, Y_LENGTH - 1))
+        random_pos = (random.randint(0, Y_LENGTH - 1), random.randint(0, X_LENGTH - 1))
         while random_pos in bombs_pos:
-            random_pos = (random.randint(0, X_LENGTH - 1), random.randint(0, Y_LENGTH - 1))
+            random_pos = (random.randint(0, Y_LENGTH - 1), random.randint(0, X_LENGTH - 1))
         bombs_pos.append(random_pos)
     return bombs_pos
 
@@ -113,12 +108,12 @@ def print_board_text(board: list[list[int]]) -> None:
     print("\n")
     for row in board:
         for number in row:
-            if number == -2:
-                print("-", end="")
-            elif number == -1:
-                print("B", end="")
+            if number == BLANK:
+                print(" - ", end="")
+            elif number == BOMB:
+                print(" B ", end="")
             else:
-                print(number, end="")
+                print(f" {number} ", end="")
         print("")
 
 
@@ -138,15 +133,19 @@ def input_guess(answer_board: list[list[int]], shown_board: list[list[int]], gue
     for square in affected_squares:
         local_row = square[0]
         local_column = square[1]
-        if shown_board[local_column][local_row] == -2 and \
-                (
-                        (answer_board[local_column][local_row] != BOMB and not game_started)
-                        or
-                        (game_started and answer_board[y][x] == 0)
-                ):
-            shown_board[local_column][local_row] = answer_board[local_column][local_row]
-            if shown_board[local_column][local_row] == 0:
-                shown_board = input_guess(answer_board, shown_board, (local_column, local_row), game_started)
+        if shown_board[local_column][local_row] != 0:
+            if((not game_started and answer_board[local_column][local_row] != BOMB)
+                or
+               (game_started and answer_board[y][x] == 0)):
+                shown_board[local_column][local_row] = answer_board[local_column][local_row]
+                if shown_board[local_column][local_row] == 0:
+                    shown_board = input_guess(answer_board, shown_board, (local_column, local_row), game_started)
+                    if shown_board[local_column][local_row] == BOMB:
+                        shown_board[y][x] = BOMB
+                        break
+            elif not game_started and answer_board[local_column][local_row] == BOMB:
+                shown_board[y][x] = BOMB
+                break
     return shown_board
 
 
@@ -181,6 +180,7 @@ def main():
                                 print("Failed")
                                 game_state = FAILED
                                 minesweeperWindow.print_board_screen(shown_board, game_state, mine_counter)
+                                print_board_text(answer_board)
                                 break
                             else:
                                 shown_board = input_guess(answer_board, shown_board, (y_guess, x_guess), game_started)
