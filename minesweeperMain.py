@@ -5,206 +5,201 @@ import minesweeperWindow
 import pygame
 from pygame.locals import *
 
-bombsCoords = 0
-mainBoard: list[list[int]] = [[]]
-boardToShow = []
+# consts
+TEXT_SIZE = 30
+X_LENGTH: int = 20
+Y_LENGTH: int = 15
+NUM_MINES: int = int((X_LENGTH * Y_LENGTH) * 0.25)  # int((X_LENGTH * Y_LENGTH) * 0.25)
+
+# definitions
+BOMB = -1
+BLANK = -2
+WON = 1
+ONGOING = 0
+FAILED = -1
 
 
-# colours
-class Colours:
-    white = [255, 255, 255]
-    red = [255, 0, 0]
-    gradient = [[255, 0, 0], [255, 146, 0], [219, 255, 0], [73, 255, 0],
-                [0, 255, 73], [0, 255, 219], [0, 146, 255], [0, 0, 255]]
-    black = [0, 0, 0]
-    blue = [0, 0, 255]
-    green = [0, 255, 0]
-
-
-def possible_squares_checker(x_guess: int, y_guess: int) -> set[Tuple[int, int]]:
+def possible_squares_checker(x: int, y: int, main_board: list[list[int]]) -> set[Tuple[int, int]]:
     """
     checks which squares around a point can be accessed
-    :param x_guess: the position of x
-    :param y_guess: the position of y
+    :param x:
+    :param y:
+    :param main_board:
     :return: returns a set of tuples which can be accessed
     """
-    possible_moves: set[Tuple[int, int]] = {(x_guess - 1, y_guess - 1), (x_guess, y_guess - 1),
-                                             (x_guess + 1, y_guess - 1), (x_guess - 1, y_guess),
-                                             (x_guess + 1, y_guess), (x_guess - 1, y_guess + 1),
-                                             (x_guess, y_guess + 1), (x_guess + 1, y_guess + 1)}
-    height: int = len(mainBoard) - 1
-    width: int = len(mainBoard[0]) - 1
-    if y_guess == 0:
-        possible_moves.discard((x_guess - 1, y_guess - 1))
-        possible_moves.discard((x_guess, y_guess - 1))
-        possible_moves.discard((x_guess + 1, y_guess - 1))
-    elif y_guess == height:
-        possible_moves.discard((x_guess + 1, y_guess + 1))
-        possible_moves.discard((x_guess, y_guess + 1))
-        possible_moves.discard((x_guess - 1, y_guess + 1))
-    if x_guess == 0:
-        possible_moves.discard((x_guess - 1, y_guess + 1))
-        possible_moves.discard((x_guess - 1, y_guess))
-        possible_moves.discard((x_guess - 1, y_guess - 1))
-    elif x_guess == width:
-        possible_moves.discard((x_guess + 1, y_guess + 1))
-        possible_moves.discard((x_guess + 1, y_guess - 1))
-        possible_moves.discard((x_guess + 1, y_guess))
+    possible_moves: set[Tuple[int, int]] = {(x - 1, y - 1), (x, y - 1),
+                                            (x + 1, y - 1), (x - 1, y),
+                                            (x + 1, y), (x - 1, y + 1),
+                                            (x, y + 1), (x + 1, y + 1)}
+    height: int = len(main_board) - 1
+    width: int = len(main_board[0]) - 1
+    if y == 0:
+        possible_moves.discard((x - 1, y - 1))
+        possible_moves.discard((x, y - 1))
+        possible_moves.discard((x + 1, y - 1))
+    elif y == height:
+        possible_moves.discard((x + 1, y + 1))
+        possible_moves.discard((x, y + 1))
+        possible_moves.discard((x - 1, y + 1))
+    if x == 0:
+        possible_moves.discard((x - 1, y + 1))
+        possible_moves.discard((x - 1, y))
+        possible_moves.discard((x - 1, y - 1))
+    elif x == width:
+        possible_moves.discard((x + 1, y + 1))
+        possible_moves.discard((x + 1, y - 1))
+        possible_moves.discard((x + 1, y))
     return possible_moves
 
 
-def create_board(column_size: int,
-                 row_size: int,
-                 num_of_mines: int) -> Tuple[list[list[int, int]], list[list[int]], list[list[str]]]:
+def create_board() -> Tuple[list[Tuple[int, int]], list[list[int]], list[list[int]]]:
     """
     creates the answer board, blank board and generates the bombs
-    :param column_size:
-    :param row_size:
-    :param num_of_mines:
     :return: bomb positions, the answer board, the "blank" board the user sees
     """
-    bomb_pos: list[list[int, int]] = []
     answer_board: list[list[int]] = []
-    board_shown: list[list[str]] = []
-    for i in range(column_size):
+    board_shown: list[list[int]] = []
+    for i in range(X_LENGTH):
         answer_board.append([])
         board_shown.append([])
-        for j in range(row_size):
+        for j in range(Y_LENGTH):
             answer_board[i].append(0)
-            board_shown[i].append("-")
-    temp_board = copy.deepcopy(answer_board)
-    for i in range(num_of_mines):
-        while True:
-            random_column = random.randint(0, column_size - 1)
-            random_row = random.randint(0, row_size - 1)
-            if answer_board[random_column][random_row] != -1:
-                break
-        bomb_pos.append([random_column, random_row])
-        answer_board[random_column][random_row] = -1
-    return bomb_pos, temp_board, board_shown
+            board_shown[i].append(-2)
+
+    bombs_pos = create_bomb_positions()
+
+    answer_board = add_bombs(answer_board, bombs_pos)
+
+    return bombs_pos, answer_board, board_shown
 
 
-# mainBoard creation, creates a fully completed board
-def bombsClose(board_array, bomb_locations):
-    for location in bomb_locations:
+def create_bomb_positions() -> list[Tuple[int, int]]:
+    """
+    adds positions for the number of bombs input
+    :return: list of tuples which are the bomb pos
+    """
+    bombs_pos: list[Tuple[int, int]] = []
+
+    for i in range(NUM_MINES):
+        random_pos = (random.randint(0, X_LENGTH - 1), random.randint(0, Y_LENGTH - 1))
+        while random_pos in bombs_pos:
+            random_pos = (random.randint(0, X_LENGTH - 1), random.randint(0, Y_LENGTH - 1))
+        bombs_pos.append(random_pos)
+    return bombs_pos
+
+
+def add_bombs(answer_board: list[list[int]], bombs_pos: list[Tuple[int, int]]) -> list[list[int]]:
+    """
+    calculates the surrounding values of bombs
+    :param answer_board:
+    :param bombs_pos:
+    :return:
+    """
+    for location in bombs_pos:
         y = location[0]
         x = location[1]
-        squares_to_change = possible_squares_checker(x, y)
+        squares_to_change = possible_squares_checker(x, y, answer_board)
         for squares in squares_to_change:
-            board_array[squares[1]][squares[0]] += 1
-    for locations in bomb_locations:
-        board_array[locations[0]][locations[1]] = "B"
+            answer_board[squares[1]][squares[0]] += 1
+        answer_board[y][x] = BOMB
+    return answer_board
 
 
-# prints the board in a good-looking way, j = x, i = y
-def print_board(board):
-    text_size = 30
-    minesweeperWindow.background.fill((67, 67, 67))
-    for i, row in enumerate(board):
-        for j, item in enumerate(row):
-            text = board[i][j]
-            if failed:
-                minesweeperWindow.add_text(text_size, [255, 0, 0], text, j * 80 + 20, i * 72 + 20)
-            elif won:
-                minesweeperWindow.add_text(text_size, Colours.green, text, j * 80 + 20, i * 72 + 20)
-            else:
-                if text == 0:
-                    minesweeperWindow.add_text(text_size, Colours.white, text, j * 80 + 20, i * 72 + 20)
-                elif text == "-":
-                    minesweeperWindow.add_text(text_size, Colours.black, text, j * 80 + 20, i * 72 + 20)
-                elif text == "B":
-                    minesweeperWindow.add_text(text_size, Colours.blue, text, j * 80 + 20, i * 72 + 20)
-                else:
-                    minesweeperWindow.add_text(text_size, Colours.gradient[text - 1],
-                                               text, j * 80 + 20, i * 72 + 20)
-    minesweeperWindow.add_text(50, Colours.white, "Number of mines:" + str(mineCount), 1730, 50)
-
-
-# prints the board in a good-looking way
-def print_board_text(board):
+def print_board_text(board: list[list[int]]) -> None:
+    """
+    prints the board to the terminal
+    :param board:
+    """
     print("\n")
     for row in board:
-        print(*row)
+        for number in row:
+            if number == -2:
+                print("-", end="")
+            elif number == -1:
+                print("B", end="")
+            else:
+                print(number, end="")
+        print("")
 
 
-# checks the value of surrounding squares, returns the board with the squares filled in
-def check_surrounding(board, show_board, guess_pos):
-    x = guess_pos[1]
-    y = guess_pos[0]
-    squares_to_change = possible_squares_checker(x, y)
-    for squares in squares_to_change:
-        local_row = squares[0]
-        local_column = squares[1]
-        # line 1: checks if it has already checked the surroundings of the current square
-        # line 2: ONLY on the first go, checks its not uncovering a bomb
-        # line 3: NOT on the first go, only happens if the central piece is 0
-        # in other words: checks if it has already checked this square, makes sure it isn't uncovering a bomb and
-        # only works when the central piece is 0
-        # inside: sets the show board to the actual value, if the new value is zero it checks the surrounding
-        if show_board[local_column][local_row] != 0 and \
-                ((mainBoard[local_column][local_row] != "B" and not gameStarted)
-                 or (gameStarted and mainBoard[y][x] == 0)):
-            show_board[local_column][local_row] = mainBoard[local_column][local_row]
-            if show_board[local_column][local_row] == 0:
-                check_surrounding(board, show_board, (local_column, local_row))
-    return show_board
+def input_guess(answer_board: list[list[int]], shown_board: list[list[int]], guess: Tuple[int, int],
+                game_started: bool) -> list[list[int]]:
+    """
+    reveals squares around input
+    :param answer_board:
+    :param shown_board:
+    :param guess:
+    :param game_started:
+    :return:
+    """
+    x = guess[1]
+    y = guess[0]
+    affected_squares = possible_squares_checker(x, y, answer_board)
+    for square in affected_squares:
+        local_row = square[0]
+        local_column = square[1]
+        if shown_board[local_column][local_row] == -2 and \
+                (
+                        (answer_board[local_column][local_row] != BOMB and not game_started)
+                        or
+                        (game_started and answer_board[y][x] == 0)
+                ):
+            shown_board[local_column][local_row] = answer_board[local_column][local_row]
+            if shown_board[local_column][local_row] == 0:
+                shown_board = input_guess(answer_board, shown_board, (local_column, local_row), game_started)
+    return shown_board
 
 
-def board_creation():
-    global bombsCoords, mainBoard, boardToShow
-    bombsCoords, mainBoard, boardToShow = create_board(yLength, xLength, numMine)
-    bombsClose(mainBoard, bombsCoords)
+def main():
+    # variables that change
+    game_state: int = ONGOING
+    mine_counter: int = copy.deepcopy(NUM_MINES)
+    bombs_pos, answer_board, shown_board = create_board()
+    game_started: bool = False
+    minesweeperWindow.print_board_screen(shown_board, game_state, mine_counter)
+    print_board_text(shown_board)
+
+    while True:
+        minesweeperWindow.refresh_screen()
+        for event in pygame.event.get():
+            if game_state != FAILED:
+                if event.type == QUIT:
+                    raise SystemExit
+
+                if event.type == MOUSEBUTTONDOWN:
+                    event_info = event.__dict__
+                    pos = list(event_info["pos"])
+                    x_guess = int(round((pos[0] - 20) / 80, 0))
+                    y_guess = int(round((pos[1] - 20) / 72, 0))
+
+                    if shown_board[y_guess][x_guess] in [BLANK, BOMB]:  # Checks if it can be edited
+                        if event_info["button"] == 1:  # if the user thinks there isn't a bomb there
+                            # creates a new board until 0 is at the point of clicking when starting
+                            while not game_started and answer_board[y_guess][x_guess] != 0:
+                                bombs_pos, answer_board, shown_board = create_board()
+                            if answer_board[y_guess][x_guess] == BOMB:
+                                print("Failed")
+                                game_state = FAILED
+                                minesweeperWindow.print_board_screen(shown_board, game_state, mine_counter)
+                                break
+                            else:
+                                shown_board = input_guess(answer_board, shown_board, (y_guess, x_guess), game_started)
+                                shown_board[y_guess][x_guess] = answer_board[y_guess][x_guess]
+                                game_started = True
+                        elif event_info["button"] == 3:  # if the user thinks there is a bomb there
+                            if shown_board[y_guess][x_guess] == BOMB:  # removes a bomb
+                                shown_board[y_guess][x_guess] = BLANK
+                                mine_counter += 1
+                            elif mine_counter != 0:  # adds a bomb
+                                mine_counter -= 1
+                                shown_board[y_guess][x_guess] = BOMB
+                    else:
+                        print("You already guessed here.")
+                    if shown_board == answer_board:
+                        game_state = WON
+                    print_board_text(shown_board)
+                    minesweeperWindow.print_board_screen(shown_board, game_state, mine_counter)
 
 
-# variables you can change
-xLength = 20
-yLength = 15
-
-# variables that change
-highlightCoords = []
-failed = False
-won = False
-numMine = 70
-mineCount = copy.deepcopy(numMine)
-board_creation()
-gameStarted = False
-print_board(boardToShow)
-print_board_text(boardToShow)
-
-while True:
-    minesweeperWindow.refresh_screen()
-    for event in pygame.event.get():
-        if not failed:
-            if event.type == QUIT:
-                raise SystemExit
-            if event.type == MOUSEBUTTONDOWN:
-                eventInfo = event.__dict__
-                pos = list(eventInfo["pos"])
-                xGuess = int(round((pos[0] - 20) / 80, 0))
-                yGuess = int(round((pos[1] - 20) / 72, 0))
-                if boardToShow[yGuess][xGuess] == "-" or "B":
-                    if eventInfo["button"] == 1:  # bomb isn't
-                        while mainBoard[yGuess][xGuess] != 0 and not gameStarted:
-                            board_creation()
-                        if mainBoard[yGuess][xGuess] == "B":
-                            print("Failed")
-                            failed = True
-                            print_board(boardToShow)
-                            break
-                        else:
-                            boardToShow = check_surrounding(mainBoard, boardToShow, (yGuess, xGuess))
-                            boardToShow[yGuess][xGuess] = mainBoard[yGuess][xGuess]
-                            gameStarted = True
-                    elif eventInfo["button"] == 3:  # bomb is
-                        if boardToShow[yGuess][xGuess] == "B":  # removes a bomb
-                            boardToShow[yGuess][xGuess] = "-"
-                            mineCount += 1
-                        elif mineCount != 0:  # adds a bomb
-                            mineCount -= 1
-                            boardToShow[yGuess][xGuess] = "B"
-                else:
-                    print("You already guessed here.")
-                if boardToShow == mainBoard:
-                    won = True
-                print_board_text(boardToShow)
-                print_board(boardToShow)
+if __name__ == '__main__':
+    main()
