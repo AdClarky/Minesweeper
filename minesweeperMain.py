@@ -4,17 +4,16 @@ from typing import Tuple
 import minesweeperWindow
 import pygame
 from pygame.locals import *
-from colour import Color
 
 bombsCoords = 0
-mainBoard: list[list[int]] = 0
+mainBoard: list[list[int]] = [[]]
 boardToShow = []
 
 
 # colours
 class Colours:
     white = [255, 255, 255]
-    red = Color("red")
+    red = [255, 0, 0]
     gradient = [[255, 0, 0], [255, 146, 0], [219, 255, 0], [73, 255, 0],
                 [0, 255, 73], [0, 255, 219], [0, 146, 255], [0, 0, 255]]
     black = [0, 0, 0]
@@ -54,26 +53,35 @@ def possible_squares_checker(x_guess: int, y_guess: int) -> set[Tuple[int, int]]
     return possible_moves
 
 
-def createBoard(column_size, row_size, num_of_mines):
-    bombs = []
-    board = []
-    show_board = []
+def create_board(column_size: int,
+                 row_size: int,
+                 num_of_mines: int) -> Tuple[list[list[int, int]], list[list[int]], list[list[str]]]:
+    """
+    creates the answer board, blank board and generates the bombs
+    :param column_size:
+    :param row_size:
+    :param num_of_mines:
+    :return: bomb positions, the answer board, the "blank" board the user sees
+    """
+    bomb_pos: list[list[int, int]] = []
+    answer_board: list[list[int]] = []
+    board_shown: list[list[str]] = []
     for i in range(column_size):
-        board.append([])
-        show_board.append([])
+        answer_board.append([])
+        board_shown.append([])
         for j in range(row_size):
-            board[i].append(0)
-            show_board[i].append("-")
-    temp_board = copy.deepcopy(board)
+            answer_board[i].append(0)
+            board_shown[i].append("-")
+    temp_board = copy.deepcopy(answer_board)
     for i in range(num_of_mines):
         while True:
-            randomColumn = random.randint(0, column_size - 1)
-            randomRow = random.randint(0, row_size - 1)
-            if board[randomColumn][randomRow] != "B":
+            random_column = random.randint(0, column_size - 1)
+            random_row = random.randint(0, row_size - 1)
+            if answer_board[random_column][random_row] != -1:
                 break
-        bombs.append([randomColumn, randomRow])
-        board[randomColumn][randomRow] = "B"
-    return bombs, temp_board, show_board
+        bomb_pos.append([random_column, random_row])
+        answer_board[random_column][random_row] = -1
+    return bomb_pos, temp_board, board_shown
 
 
 # mainBoard creation, creates a fully completed board
@@ -144,10 +152,7 @@ def check_surrounding(board, show_board, guess_pos):
 
 def board_creation():
     global bombsCoords, mainBoard, boardToShow
-    boardCreation = createBoard(yLength, xLength, numMine)
-    bombsCoords = boardCreation[0]
-    mainBoard = boardCreation[1]
-    boardToShow = boardCreation[2]
+    bombsCoords, mainBoard, boardToShow = create_board(yLength, xLength, numMine)
     bombsClose(mainBoard, bombsCoords)
 
 
@@ -159,7 +164,7 @@ yLength = 15
 highlightCoords = []
 failed = False
 won = False
-numMine = int((xLength * yLength) * 0.25)
+numMine = 70
 mineCount = copy.deepcopy(numMine)
 board_creation()
 gameStarted = False
