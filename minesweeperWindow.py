@@ -1,5 +1,7 @@
 import pygame
 from pygame import FULLSCREEN
+
+from board import Board
 from config import *
 
 # definitions
@@ -53,7 +55,7 @@ def add_text(font_size, colour, words, x_centre, y_centre):
     background.blit(text, text_position)
 
 
-def print_board_screen(board_shown: list[list[int]], game_state: int, mine_counter: int) -> None:
+def print_board_screen(board_shown: Board, game_state: int, mine_counter: int) -> None:
     """
     Prints the board shown to the screen
     :param board_shown:
@@ -61,19 +63,21 @@ def print_board_screen(board_shown: list[list[int]], game_state: int, mine_count
     :param mine_counter:
     """
     background.fill((67, 67, 67))
-    for i, row in enumerate(board_shown):
-        for j, text in enumerate(row):
+
+    for y in range(board_shown.height):
+        for x in range(board_shown.width):
+            text = board_shown.get_board_value(x, y)
             if game_state == FAILED:
-                add_text(TEXT_SIZE, Colours.red, text, j * 80 + 20, i * 72 + 20)
+                add_text(TEXT_SIZE, Colours.red, text, x * 80 + 20, y * 72 + 20)
             elif game_state == WON:
-                add_text(TEXT_SIZE, Colours.green, text, j * 80 + 20, i * 72 + 20)
+                add_text(TEXT_SIZE, Colours.green, text, x * 80 + 20, y * 72 + 20)
             else:
                 if text == BLANK:
-                    add_text(TEXT_SIZE, Colours.black, "-", j * 80 + 20, i * 72 + 20)
+                    add_text(TEXT_SIZE, Colours.black, "-", x * 80 + 20, y * 72 + 20)
                 elif text == BOMB:
-                    add_text(TEXT_SIZE, Colours.blue, "B", j * 80 + 20, i * 72 + 20)
+                    add_text(TEXT_SIZE, Colours.blue, "B", x * 80 + 20, y * 72 + 20)
                 else:
-                    add_text(TEXT_SIZE, Colours.gradient[int(text)], text, j * 80 + 20, i * 72 + 20)
+                    add_text(TEXT_SIZE, Colours.gradient[int(text)], text, x * 80 + 20, y * 72 + 20)
     add_text(50, Colours.white, "Number of mines:" + str(mine_counter), 1730, 50)
 
 
