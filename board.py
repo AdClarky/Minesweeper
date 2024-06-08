@@ -13,6 +13,6 @@ class Board:
     def get_board_value(self, x: int, y: int) -> int:
         return self.board[y][x]
 
-    def print_board(self):
+    def print(self):
         for row in self.board:
             print(row)
