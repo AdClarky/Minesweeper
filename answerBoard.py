@@ -1,13 +1,16 @@
+import random
 from typing import Tuple
 from config import *
 from board import Board
 
 
 class AnswerBoard(Board):
-    def __init__(self, width: int, height: int, bombs: list[Tuple[int, int]]):
-        super().__init__(width, height)
+    bombs_pos: list[Tuple[int, int]]
 
-        for coords in bombs:
+    def __init__(self, width: int, height: int):
+        super().__init__(width, height)
+        self.create_bomb_positions()
+        for coords in self.bombs_pos:
             y = coords[0]
             x = coords[1]
             squares_to_change = self.possible_squares_checker(x, y)
@@ -45,3 +48,16 @@ class AnswerBoard(Board):
             possible_moves.discard((x + 1, y - 1))
             possible_moves.discard((x + 1, y))
         return possible_moves
+
+    def create_bomb_positions(self) -> None:
+        """
+        adds positions for the number of bombs input
+        :return: list of tuples which are the bomb pos
+        """
+        self.bombs_pos = []
+
+        for i in range(NUM_MINES):
+            random_pos = (random.randint(0, WIDTH - 1), random.randint(0, HEIGHT - 1))
+            while random_pos in self.bombs_pos:
+                random_pos = (random.randint(0, WIDTH - 1), random.randint(0, HEIGHT - 1))
+            self.bombs_pos.append(random_pos)

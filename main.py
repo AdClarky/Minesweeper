@@ -10,21 +10,6 @@ from board import Board
 from answerBoard import AnswerBoard
 
 
-def create_bomb_positions() -> list[Tuple[int, int]]:
-    """
-    adds positions for the number of bombs input
-    :return: list of tuples which are the bomb pos
-    """
-    bombs_pos: list[Tuple[int, int]] = []
-
-    for i in range(NUM_MINES):
-        random_pos = (random.randint(0, WIDTH - 1), random.randint(0, HEIGHT - 1))
-        while random_pos in bombs_pos:
-            random_pos = (random.randint(0, WIDTH - 1), random.randint(0, HEIGHT - 1))
-        bombs_pos.append(random_pos)
-    return bombs_pos
-
-
 def input_guess(answer_board: AnswerBoard, shown_board: Board, guess: Tuple[int, int],
                 game_started: bool) -> Board:
     """
@@ -63,7 +48,7 @@ def main():
     game_state: int = ONGOING
     mine_counter: int = copy.deepcopy(NUM_MINES)
     shown_board: Board = Board(WIDTH, HEIGHT)
-    answer_board: AnswerBoard = AnswerBoard(WIDTH, HEIGHT, create_bomb_positions())
+    answer_board: AnswerBoard = AnswerBoard(WIDTH, HEIGHT)
     game_started: bool = False
     window.print_board_screen(shown_board, game_state, mine_counter)
     shown_board.print()
@@ -90,8 +75,8 @@ def main():
             if event_info["button"] == 1:  # if the user thinks there isn't a bomb there
                 # creates a new board until 0 is at the point of clicking when starting
                 while not game_started and answer_board.get_board_value(x_guess, y_guess) != 0:
-                    answer_board: AnswerBoard = AnswerBoard(WIDTH, HEIGHT, create_bomb_positions())
-
+                    answer_board: AnswerBoard = AnswerBoard(WIDTH, HEIGHT)
+                
                 if answer_board.get_board_value(x_guess, y_guess) == BOMB:
                     print("Failed")
                     game_state = FAILED
