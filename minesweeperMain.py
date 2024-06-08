@@ -169,8 +169,7 @@ def main():
                     pos = list(event_info["pos"])
                     x_guess = int(round((pos[0] - 20) / 80, 0))
                     y_guess = int(round((pos[1] - 20) / 72, 0))
-
-                    if shown_board[y_guess][x_guess] in [BLANK, BOMB]:  # Checks if it can be edited
+                    if shown_board.get_board_value(x_guess, y_guess) in [BLANK, BOMB]:  # Checks if it can be edited
                         if event_info["button"] == 1:  # if the user thinks there isn't a bomb there
                             # creates a new board until 0 is at the point of clicking when starting
                             while not game_started and answer_board[y_guess][x_guess] != 0:
@@ -183,15 +182,15 @@ def main():
                                 break
                             else:
                                 shown_board = input_guess(answer_board, shown_board, (y_guess, x_guess), game_started)
-                                shown_board[y_guess][x_guess] = answer_board[y_guess][x_guess]
+                                shown_board.set_square_value(x_guess, y_guess, answer_board[y_guess][x_guess])
                                 game_started = True
                         elif event_info["button"] == 3:  # if the user thinks there is a bomb there
-                            if shown_board[y_guess][x_guess] == BOMB:  # removes a bomb
-                                shown_board[y_guess][x_guess] = BLANK
+                            if shown_board.get_board_value(x_guess, y_guess) == BOMB:  # removes a bomb
+                                shown_board.set_square_value(x_guess, y_guess, BLANK)
                                 mine_counter += 1
                             elif mine_counter != 0:  # adds a bomb
                                 mine_counter -= 1
-                                shown_board[y_guess][x_guess] = BOMB
+                                shown_board.set_square_value(x_guess, y_guess, BOMB)
                     else:
                         print("You already guessed here.")
                     if shown_board == answer_board:
