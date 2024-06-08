@@ -6,7 +6,7 @@ from board import Board
 
 class AnswerBoard(Board):
     def __init__(self, width: int, height: int):
-        super().__init__(width, height)
+        super().__init__(width, height, 0)
         self.bombs_pos: list[Tuple[int, int]]
         self.create_bomb_positions()
         for coords in self.bombs_pos:
