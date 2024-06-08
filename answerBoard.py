@@ -11,11 +11,11 @@ class AnswerBoard(Board):
         super().__init__(width, height)
         self.create_bomb_positions()
         for coords in self.bombs_pos:
-            y = coords[0]
-            x = coords[1]
+            y = coords[1]
+            x = coords[0]
             squares_to_change = self.possible_squares_checker(x, y)
             for square in squares_to_change:
-                if square == BOMB:
+                if self.board[square[1]][square[0]] == BOMB:
                     continue
                 self.board[square[1]][square[0]] += 1
             self.board[y][x] = BOMB
@@ -35,7 +35,7 @@ class AnswerBoard(Board):
             possible_moves.discard((x - 1, y - 1))
             possible_moves.discard((x, y - 1))
             possible_moves.discard((x + 1, y - 1))
-        elif y == self.height:
+        elif y == self.height-1:
             possible_moves.discard((x + 1, y + 1))
             possible_moves.discard((x, y + 1))
             possible_moves.discard((x - 1, y + 1))
@@ -43,7 +43,7 @@ class AnswerBoard(Board):
             possible_moves.discard((x - 1, y + 1))
             possible_moves.discard((x - 1, y))
             possible_moves.discard((x - 1, y - 1))
-        elif x == self.width:
+        elif x == self.width-1:
             possible_moves.discard((x + 1, y + 1))
             possible_moves.discard((x + 1, y - 1))
             possible_moves.discard((x + 1, y))
