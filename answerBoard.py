@@ -1,6 +1,5 @@
 from typing import Tuple
-
-import main
+from config import *
 from board import Board
 
 
@@ -13,10 +12,10 @@ class AnswerBoard(Board):
             x = coords[1]
             squares_to_change = self.possible_squares_checker(x, y)
             for square in squares_to_change:
-                if square == main.BOMB:
+                if square == BOMB:
                     continue
                 self.board[y][x] += 1
-            self.board[y][x] = main.BOMB
+            self.board[y][x] = BOMB
 
     def possible_squares_checker(self, x: int, y: int) -> set[Tuple[int, int]]:
         """
