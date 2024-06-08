@@ -1,6 +1,4 @@
 import copy
-import random
-from typing import Tuple
 import window
 import pygame
 from pygame.locals import *
@@ -10,36 +8,20 @@ from board import Board
 from answerBoard import AnswerBoard
 
 
-def input_guess(answer_board: AnswerBoard, shown_board: Board, guess: Tuple[int, int],
-                game_started: bool) -> Board:
-    """
-    reveals squares around input
-    :param answer_board:
-    :param shown_board:
-    :param guess:
-    :param game_started:
-    :return:
-    """
-    x = guess[1]
-    y = guess[0]
+def input_guess(answer_board: AnswerBoard, shown_board: Board, x: int, y: int, game_started: bool) -> Board:
+    if answer_board.get_board_value(x, y) != 0:  # if the square clicked we can just display it
+        shown_board.set_square_value(x, y, answer_board.get_board_value(x, y))
+        return shown_board
+
+    # if the square clicked is a 0 we need to display the surrounding squares too
     affected_squares = answer_board.possible_squares_checker(x, y)
     for square in affected_squares:
         relative_x = square[0]
         relative_y = square[1]
-        if shown_board.get_board_value(relative_x, relative_y) != 0:
-            if ((not game_started and answer_board.get_board_value(relative_x, relative_y) != BOMB)
-                    or
-                    (game_started and answer_board.get_board_value(x, y) == 0)):
-                shown_board.set_square_value(relative_x, relative_y,
-                                             answer_board.get_board_value(relative_x, relative_y))
-                if shown_board.get_board_value(relative_x, relative_y) == 0:
-                    shown_board = input_guess(answer_board, shown_board, (relative_y, relative_x), game_started)
-                    if shown_board.get_board_value(relative_x, relative_y) == BOMB:
-                        shown_board.set_square_value(x, y, BOMB)
-                        break
-            elif not game_started and answer_board.get_board_value(relative_x, relative_y) == BOMB:
-                shown_board.set_square_value(x, y, BOMB)
-                break
+        if shown_board.get_board_value(relative_x, relative_y) == 0:  # skip if the position has been checked already
+            continue
+        shown_board = input_guess(answer_board, shown_board, relative_y, relative_x, game_started)
+    shown_board.set_square_value(x, y, answer_board.get_board_value(x, y))
     return shown_board
 
 
@@ -51,7 +33,6 @@ def main():
     answer_board: AnswerBoard = AnswerBoard(WIDTH, HEIGHT)
     game_started: bool = False
     window.print_board_screen(shown_board, game_state, mine_counter)
-    shown_board.print()
 
     while True:
         window.refresh_screen()
@@ -76,17 +57,14 @@ def main():
                 # creates a new board until 0 is at the point of clicking when starting
                 while not game_started and answer_board.get_board_value(x_guess, y_guess) != 0:
                     answer_board: AnswerBoard = AnswerBoard(WIDTH, HEIGHT)
-                
+                game_started = True
                 if answer_board.get_board_value(x_guess, y_guess) == BOMB:
                     print("Failed")
                     game_state = FAILED
                     window.print_board_screen(shown_board, game_state, mine_counter)
-                    answer_board.print()
                     break
 
-                shown_board = input_guess(answer_board, shown_board, (y_guess, x_guess), game_started)
-                shown_board.set_square_value(x_guess, y_guess, answer_board.get_board_value(x_guess, y_guess))
-                game_started = True
+                shown_board = input_guess(answer_board, shown_board, y_guess, x_guess, game_started)
             elif event_info["button"] == 3:  # if the user thinks there is a bomb there
                 if shown_board.get_board_value(x_guess, y_guess) == BOMB:  # removes a bomb
                     shown_board.set_square_value(x_guess, y_guess, BLANK)
