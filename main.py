@@ -8,21 +8,6 @@ from board import Board
 from answerBoard import AnswerBoard
 
 
-def input_guess(answer_board: AnswerBoard, shown_board: Board, x: int, y: int) -> None:
-    shown_board.set_square_value(x, y, answer_board.get_board_value(x, y))
-    if answer_board.get_board_value(x, y) != 0:  # if the square clicked we can just display it
-        return
-
-    # if the square clicked is a 0 we need to display the surrounding squares too
-    affected_squares = answer_board.possible_squares_checker(x, y)
-    for square in affected_squares:
-        relative_x = square[0]
-        relative_y = square[1]
-        if shown_board.get_board_value(relative_x, relative_y) != -2:  # skip if the position has been checked already
-            continue
-        input_guess(answer_board, shown_board, relative_x, relative_y)
-
-
 def main():
     # variables that change
     game_state: int = ONGOING
@@ -62,7 +47,7 @@ def main():
                     window.print_board_screen(shown_board, game_state, mine_counter)
                     break
 
-                input_guess(answer_board, shown_board, x_guess, y_guess)
+                answer_board.board_input(shown_board, x_guess, y_guess)
             elif event_info["button"] == 3:  # if the user thinks there is a bomb there
                 if shown_board.get_board_value(x_guess, y_guess) == BOMB:  # removes a bomb
                     shown_board.set_square_value(x_guess, y_guess, BLANK)

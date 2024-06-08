@@ -60,3 +60,18 @@ class AnswerBoard(Board):
             while random_pos in self.bombs_pos:
                 random_pos = (random.randint(0, WIDTH - 1), random.randint(0, HEIGHT - 1))
             self.bombs_pos.append(random_pos)
+
+    def board_input(self, input_board: Board, x: int, y: int):
+        input_board.set_square_value(x, y, self.get_board_value(x, y))
+        if self.get_board_value(x, y) != 0:  # if the square clicked we can just display it
+            return
+
+        # if the square clicked is a 0 we need to display the surrounding squares too
+        affected_squares = self.possible_squares_checker(x, y)
+        for square in affected_squares:
+            relative_x = square[0]
+            relative_y = square[1]
+            if input_board.get_board_value(relative_x,
+                                           relative_y) != -2:  # skip if the position has been checked already
+                continue
+            self.board_input(input_board, relative_x, relative_y)
