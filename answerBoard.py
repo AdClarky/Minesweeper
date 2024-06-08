@@ -5,10 +5,9 @@ from board import Board
 
 
 class AnswerBoard(Board):
-    bombs_pos: list[Tuple[int, int]]
-
     def __init__(self, width: int, height: int):
         super().__init__(width, height)
+        self.bombs_pos: list[Tuple[int, int]]
         self.create_bomb_positions()
         for coords in self.bombs_pos:
             y = coords[1]

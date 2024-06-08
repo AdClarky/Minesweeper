@@ -1,11 +1,8 @@
 class Board:
-    board: list[list[int]] = []
-    width: int
-    height: int
-
     def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
+        self.board: list[list[int]] = []
         for y in range(height):
             self.board.append([])
             for x in range(width):
