@@ -15,7 +15,7 @@ class Board:
         if not isinstance(other, Board):
             return False
         for row1, row2 in zip(self.board, other.board):
-            if(row1 != row2):
+            if row1 != row2:
                 return False
         return True
 

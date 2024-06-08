@@ -1,7 +1,7 @@
 import copy
 import random
 from typing import Tuple
-import minesweeperWindow
+import window
 import pygame
 from pygame.locals import *
 
@@ -82,11 +82,11 @@ def main():
     shown_board: Board = Board(WIDTH, HEIGHT)
     bombs_pos, answer_board = create_board()
     game_started: bool = False
-    minesweeperWindow.print_board_screen(shown_board, game_state, mine_counter)
+    window.print_board_screen(shown_board, game_state, mine_counter)
     shown_board.print()
 
     while True:
-        minesweeperWindow.refresh_screen()
+        window.refresh_screen()
         for event in pygame.event.get():
             if game_state != FAILED:
                 if event.type == QUIT:
@@ -105,7 +105,7 @@ def main():
                             if answer_board.get_board_value(x_guess, y_guess) == BOMB:
                                 print("Failed")
                                 game_state = FAILED
-                                minesweeperWindow.print_board_screen(shown_board, game_state, mine_counter)
+                                window.print_board_screen(shown_board, game_state, mine_counter)
                                 answer_board.print()
                                 break
                             else:
@@ -124,7 +124,7 @@ def main():
                     if shown_board.__eq__(answer_board):
                         game_state = WON
                     shown_board.print()
-                    minesweeperWindow.print_board_screen(shown_board, game_state, mine_counter)
+                    window.print_board_screen(shown_board, game_state, mine_counter)
 
 
 if __name__ == '__main__':

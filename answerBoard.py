@@ -1,29 +1,28 @@
 from typing import Tuple
 
-import minesweeperMain
+import main
 from board import Board
 
 
 class AnswerBoard(Board):
     def __init__(self, width: int, height: int, bombs: list[Tuple[int, int]]):
-        super(width, height)
+        super().__init__(width, height)
 
         for coords in bombs:
             y = coords[0]
             x = coords[1]
             squares_to_change = self.possible_squares_checker(x, y)
             for square in squares_to_change:
-                if square == minesweeperMain.BOMB:
+                if square == main.BOMB:
                     continue
                 self.board[y][x] += 1
-            self.board[y][x] = minesweeperMain.BOMB
+            self.board[y][x] = main.BOMB
 
     def possible_squares_checker(self, x: int, y: int) -> set[Tuple[int, int]]:
         """
         checks which squares around a point can be accessed
         :param x:
         :param y:
-        :param main_board:
         :return: returns a set of tuples which can be accessed
         """
         possible_moves: set[Tuple[int, int]] = {(x - 1, y - 1), (x, y - 1),
