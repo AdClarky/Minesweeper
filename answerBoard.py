@@ -14,7 +14,7 @@ class AnswerBoard(Board):
             for square in squares_to_change:
                 if square == BOMB:
                     continue
-                self.board[y][x] += 1
+                self.board[square[1]][square[0]] += 1
             self.board[y][x] = BOMB
 
     def possible_squares_checker(self, x: int, y: int) -> set[Tuple[int, int]]:

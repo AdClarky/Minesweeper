@@ -18,9 +18,9 @@ def create_bomb_positions() -> list[Tuple[int, int]]:
     bombs_pos: list[Tuple[int, int]] = []
 
     for i in range(NUM_MINES):
-        random_pos = (random.randint(0, HEIGHT - 1), random.randint(0, WIDTH - 1))
+        random_pos = (random.randint(0, WIDTH - 1), random.randint(0, HEIGHT - 1))
         while random_pos in bombs_pos:
-            random_pos = (random.randint(0, HEIGHT - 1), random.randint(0, WIDTH - 1))
+            random_pos = (random.randint(0, WIDTH - 1), random.randint(0, HEIGHT - 1))
         bombs_pos.append(random_pos)
     return bombs_pos
 
@@ -70,9 +70,9 @@ def main():
 
     while True:
         window.refresh_screen()
-        if game_state == FAILED:
-            break
         for event in pygame.event.get():
+            if game_state == FAILED:
+                continue
             if event.type == QUIT:
                 raise SystemExit
 
@@ -83,30 +83,33 @@ def main():
             pos = list(event_info["pos"])
             x_guess = int(round((pos[0] - 20) / 80, 0))
             y_guess = int(round((pos[1] - 20) / 72, 0))
-            if shown_board.get_board_value(x_guess, y_guess) in [BLANK, BOMB]:  # Checks if it can be edited
-                if event_info["button"] == 1:  # if the user thinks there isn't a bomb there
-                    # creates a new board until 0 is at the point of clicking when starting
-                    while not game_started and answer_board.get_board_value(x_guess, y_guess) != 0:
-                        answer_board: AnswerBoard = AnswerBoard(WIDTH, HEIGHT, create_bomb_positions())
-                    if answer_board.get_board_value(x_guess, y_guess) == BOMB:
-                        print("Failed")
-                        game_state = FAILED
-                        window.print_board_screen(shown_board, game_state, mine_counter)
-                        answer_board.print()
-                        break
-                    else:
-                        shown_board = input_guess(answer_board, shown_board, (y_guess, x_guess), game_started)
-                        shown_board.set_square_value(x_guess, y_guess, answer_board.get_board_value(x_guess, y_guess))
-                        game_started = True
-                elif event_info["button"] == 3:  # if the user thinks there is a bomb there
-                    if shown_board.get_board_value(x_guess, y_guess) == BOMB:  # removes a bomb
-                        shown_board.set_square_value(x_guess, y_guess, BLANK)
-                        mine_counter += 1
-                    elif mine_counter != 0:  # adds a bomb
-                        mine_counter -= 1
-                        shown_board.set_square_value(x_guess, y_guess, BOMB)
-            else:
+            if shown_board.get_board_value(x_guess, y_guess) not in [BLANK, BOMB]:  # Checks if it can be edited
                 print("You already guessed here.")
+                continue
+
+            if event_info["button"] == 1:  # if the user thinks there isn't a bomb there
+                # creates a new board until 0 is at the point of clicking when starting
+                while not game_started and answer_board.get_board_value(x_guess, y_guess) != 0:
+                    answer_board: AnswerBoard = AnswerBoard(WIDTH, HEIGHT, create_bomb_positions())
+
+                if answer_board.get_board_value(x_guess, y_guess) == BOMB:
+                    print("Failed")
+                    game_state = FAILED
+                    window.print_board_screen(shown_board, game_state, mine_counter)
+                    answer_board.print()
+                    break
+
+                shown_board = input_guess(answer_board, shown_board, (y_guess, x_guess), game_started)
+                shown_board.set_square_value(x_guess, y_guess, answer_board.get_board_value(x_guess, y_guess))
+                game_started = True
+            elif event_info["button"] == 3:  # if the user thinks there is a bomb there
+                if shown_board.get_board_value(x_guess, y_guess) == BOMB:  # removes a bomb
+                    shown_board.set_square_value(x_guess, y_guess, BLANK)
+                    mine_counter += 1
+                elif mine_counter != 0:  # adds a bomb
+                    mine_counter -= 1
+                    shown_board.set_square_value(x_guess, y_guess, BOMB)
+
             if shown_board.__eq__(answer_board):
                 game_state = WON
             shown_board.print()
