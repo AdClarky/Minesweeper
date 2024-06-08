@@ -7,7 +7,7 @@ Install pygame
 ````
 pip install pygame
 ````
-Then run minesweeperMain.py
+Then run main.py
 ````
-python3 mainsweeperMain.py
+python3 main.py
 ```` 
