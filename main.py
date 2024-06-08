@@ -10,17 +10,16 @@ from answerBoard import AnswerBoard
 
 def main():
     # variables that change
-    game_state: int = ONGOING
     mine_counter: int = copy.deepcopy(NUM_MINES)
     shown_board: Board = Board(WIDTH, HEIGHT)
     answer_board: AnswerBoard = AnswerBoard(WIDTH, HEIGHT)
     game_started: bool = False
-    window.print_board_screen(shown_board, game_state, mine_counter)
+    window.print_board_screen(shown_board, shown_board.lost, mine_counter)
 
     while True:
         window.refresh_screen()
         for event in pygame.event.get():
-            if game_state == FAILED:
+            if shown_board.lost:
                 continue
             if event.type == QUIT:
                 raise SystemExit
@@ -41,13 +40,8 @@ def main():
                 while (not game_started) and answer_board.get_board_value(x_guess, y_guess) != 0:
                     answer_board: AnswerBoard = AnswerBoard(WIDTH, HEIGHT)
                 game_started = True
-                if answer_board.get_board_value(x_guess, y_guess) == BOMB:
-                    print("Failed")
-                    game_state = FAILED
-                    window.print_board_screen(shown_board, game_state, mine_counter)
-                    break
-
                 answer_board.board_input(shown_board, x_guess, y_guess)
+
             elif event_info["button"] == 3:  # if the user thinks there is a bomb there
                 if shown_board.get_board_value(x_guess, y_guess) == BOMB:  # removes a bomb
                     shown_board.set_square_value(x_guess, y_guess, BLANK)
@@ -57,8 +51,8 @@ def main():
                     shown_board.set_square_value(x_guess, y_guess, BOMB)
 
             if shown_board.__eq__(answer_board):
-                game_state = WON
-            window.print_board_screen(shown_board, game_state, mine_counter)
+                print("You have won!")
+            window.print_board_screen(shown_board, shown_board.lost, mine_counter)
 
 
 if __name__ == '__main__':

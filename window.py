@@ -55,11 +55,11 @@ def add_text(font_size, colour, words, x_centre, y_centre):
     background.blit(text, text_position)
 
 
-def print_board_screen(board_shown: Board, game_state: int, mine_counter: int) -> None:
+def print_board_screen(board_shown: Board, lost: bool, mine_counter: int) -> None:
     """
     Prints the board shown to the screen
     :param board_shown:
-    :param game_state: 0 ongoing, 1 won, -1 lost
+    :param lost: 0 ongoing, 1 won, -1 lost
     :param mine_counter:
     """
     background.fill((67, 67, 67))
@@ -67,10 +67,8 @@ def print_board_screen(board_shown: Board, game_state: int, mine_counter: int) -
     for y in range(board_shown.height):
         for x in range(board_shown.width):
             text = board_shown.get_board_value(x, y)
-            if game_state == FAILED:
+            if lost:
                 add_text(TEXT_SIZE, Colours.red, text, x * 80 + 20, y * 72 + 20)
-            elif game_state == WON:
-                add_text(TEXT_SIZE, Colours.green, text, x * 80 + 20, y * 72 + 20)
             else:
                 if text == BLANK:
                     add_text(TEXT_SIZE, Colours.black, "-", x * 80 + 20, y * 72 + 20)

@@ -63,6 +63,9 @@ class AnswerBoard(Board):
 
     def board_input(self, input_board: Board, x: int, y: int):
         input_board.set_square_value(x, y, self.get_board_value(x, y))
+        if self.get_board_value(x, y) == BOMB:  # if they clicked a bomb
+            input_board.lost = True
+            return
         if self.get_board_value(x, y) != 0:  # if the square clicked we can just display it
             return
 

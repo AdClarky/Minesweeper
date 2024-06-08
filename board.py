@@ -3,6 +3,7 @@ class Board:
         self.width = width
         self.height = height
         self.board: list[list[int]] = []
+        self.lost = False
         for y in range(height):
             self.board.append([])
             for x in range(width):
