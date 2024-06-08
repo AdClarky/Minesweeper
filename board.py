@@ -1,12 +1,12 @@
 class Board:
-    def __init__(self, width: int, height: int):
+    def __init__(self, width: int, height: int, starting_vals: int = -2):
         self.width = width
         self.height = height
         self.board: list[list[int]] = []
         for y in range(height):
             self.board.append([])
             for x in range(width):
-                self.board[y].append(0)
+                self.board[y].append(starting_vals)
 
     def __eq__(self, other):
         if not isinstance(other, Board):
