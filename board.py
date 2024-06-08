@@ -11,6 +11,14 @@ class Board:
             for x in range(width):
                 self.board[y].append(0)
 
+    def __eq__(self, other):
+        if not isinstance(other, Board):
+            return False
+        for row1, row2 in zip(self.board, other.board):
+            if(row1 != row2):
+                return False
+        return True
+
     def set_square_value(self, x: int, y: int, value: int) -> None:
         self.board[y][x] = value
 
