@@ -116,7 +116,7 @@ def print_board_text(board: list[list[int]]) -> None:
 
 
 def input_guess(answer_board: list[list[int]], shown_board: Board, guess: Tuple[int, int],
-                game_started: bool) -> list[list[int]]:
+                game_started: bool) -> Board:
     """
     reveals squares around input
     :param answer_board:
@@ -131,18 +131,18 @@ def input_guess(answer_board: list[list[int]], shown_board: Board, guess: Tuple[
     for square in affected_squares:
         relative_x = square[0]
         relative_y = square[1]
-        if shown_board[relative_y][relative_x] != 0:
+        if shown_board.get_board_value(relative_x, relative_y) != 0:
             if((not game_started and answer_board[relative_y][relative_x] != BOMB)
                 or
                (game_started and answer_board[y][x] == 0)):
-                shown_board[relative_y][relative_x] = answer_board[relative_y][relative_x]
-                if shown_board[relative_y][relative_x] == 0:
+                shown_board.set_square_value(relative_x, relative_y, answer_board[relative_y][relative_x])
+                if shown_board.get_board_value(relative_x, relative_y) == 0:
                     shown_board = input_guess(answer_board, shown_board, (relative_y, relative_x), game_started)
-                    if shown_board[relative_y][relative_x] == BOMB:
-                        shown_board[y][x] = BOMB
+                    if shown_board.get_board_value(relative_x, relative_y) == BOMB:
+                        shown_board.set_square_value(x, y, BOMB)
                         break
             elif not game_started and answer_board[relative_y][relative_x] == BOMB:
-                shown_board[y][x] = BOMB
+                shown_board.set_square_value(x, y, BOMB)
                 break
     return shown_board
 
