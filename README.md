@@ -3,9 +3,9 @@
 My take on the original minesweeper. Same controls as the original, left click to reveal, right click to flag.
 
 ## Run instructions
-Install pygame
+Install requirements
 ````
-pip install pygame
+pip install -r requirements.txt
 ````
 Then run main.py
 ````
